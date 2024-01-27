@@ -1,3 +1,4 @@
+require_relative 'tree_node'
 class KnightPathFinder
     @@MOVEMENT_VECTORS = [[2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1], [-1, -2], [1, -2], [2, -1]]
 
@@ -14,7 +15,8 @@ class KnightPathFinder
 
     def initialize(position)
         @considered_positions = [position]
-        @check_queue = []
+        @root_node = PolyTreeNode.new(position)
+        build_move_tree
     end
     def new_move_positions(pos)
         new_moves = KnightPathFinder.valid_moves(pos)
@@ -22,7 +24,23 @@ class KnightPathFinder
         @considered_positions += new_moves
         new_moves
     end
-    def build_move_tree()
-
+    def build_move_tree
+        queue = []
+        queue.push(@root_node)
+        until queue.empty?
+            current_node = queue.shift
+            current = new_move_positions(current_node.value).map {|v| PolyTreeNode.new(v)}
+            current.each {|pos| current_node.add_child(pos)}
+            queue.push(*current)
+        end
+    end
+    def find_path(pos)
+        found = @root_node.bfs(pos)
+        path = [found.value]
+        while found.parent
+            found = found.parent
+            path << found.value
+        end
+        path.reverse
     end
 end
